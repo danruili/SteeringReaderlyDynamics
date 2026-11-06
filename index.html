@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Steering Readerly Dynamics: learning the rhythm of human stories to guide suspense and humor in language-model writing.">
+  <meta name="theme-color" content="#ffffff">
+  <title>Steering Readerly Dynamics</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="app.js"></script>
+  <script defer src="screen-canvas.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <main id="main">
+    <article>
+      <div class="article-header prose">
+        <h1>Steering Readerly Dynamics: Trajectory-Guided Story Generation with Large Language Models</h1>
+        <p class="authors"><a class="author" href="https://danruili.github.io/" target="_blank" rel="noopener">Danrui Li<sup>1</sup></a>, <a class="author" href="https://www.linkedin.com/in/yiwei-evan-zhao-18584a105/" target="_blank" rel="noopener">Yiwei Zhao<sup>2</sup></a>, <a class="author" href="https://www.cs.rutgers.edu/people/professors/details/mubbasir-kapadia" target="_blank" rel="noopener">Mubbasir Kapadia<sup>1</sup></a>, <a class="author" href="https://lingxiao.li/" target="_blank" rel="noopener">Lingxiao Li<sup>2</sup></a></p>
+        <p class="affiliations"><span><sup>1</sup> Rutgers University</span><span><sup>2</sup> Netflix</span></p>
+      </div>
+
+      <div class="prose teaser-summary">
+      <figure class="terminal-demo" aria-label="Animated example of suspense-guided story generation">
+        <div class="terminal-window">
+          <div id="terminal-output" class="terminal-output" role="region" aria-label="Story generation transcript" tabindex="0"></div>
+          <button type="button" id="terminal-replay" class="terminal-replay" hidden>Replay</button>
+        </div>
+        <noscript><p>Then the tiger wandered around. Tom tried to hold his breath… The reader response predictor suggests 40/100 suspense. The selected continuation: Tom heard no sound nearby. Maybe the tiger left…</p></noscript>
+      </figure>
+
+      <div class="tldr">
+        <!-- <span class="eyebrow">TL;DR</span> -->
+        <p>We train a small LLM on human-written stories to predict how readerly dynamics should change as a story unfolds, then use its predictions to guide a larger LLM’s next story segment.</p>
+        <div class="paper-links"><a class="paper-button" href="https://arxiv.org/abs/2611.00469" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8Z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg><span>Read the paper</span></a></div>
+      </div>
+      </div>
+
+      <section id="motivation" class="prose">
+        <!-- <h2>Readerly dynamics in story writing</h2> -->
+        <p>As a story unfolds, readers experience evolving reader responses, encompassing cognitive, affective, and evaluative aspects <a class="citation-link" href="https://ohiostatepress.org/books/BookPages/PhelanNarrative.htm" target="_blank" rel="noopener" title="Narrative as Rhetoric — Phelan (1996)" aria-label="Reference 1">[1]</a>. The time series of reader responses forms <em>readerly dynamics</em>, which are central to human entertainment, from football matches to detective novels <a class="citation-link" href="https://doi.org/10.1086/677350" target="_blank" rel="noopener" title="Suspense and Surprise — Ely, Frankel, and Kamenica (2015)" aria-label="Reference 2">[2]</a>. In storytelling, these dynamics are particularly important for creative industries because they are positively associated with readers' immersion and subsequent social-sharing intentions <a class="citation-link" href="https://doi.org/10.1080/15213269.2022.2103711" target="_blank" rel="noopener" title="The Experience of Emotional Shifts in Narrative Persuasion — Winkler et al. (2023)" aria-label="Reference 3">[3]</a>.</p>
+        <p>Despite the wide use of LLMs for story generation, producing high-quality readerly dynamics remains difficult. Prior work has identified differences between LLM-generated and human-written stories in higher-level narrative properties, such as plot structures <a class="citation-link" href="https://arxiv.org/abs/2604.03136" target="_blank" rel="noopener" title="StoryScope — Russell et al. (2026)" aria-label="Reference 4">[4]</a> and affective dynamics <a class="citation-link" href="https://arxiv.org/abs/2605.27878" target="_blank" rel="noopener" title="Narrative Flattening — Li et al. (2026)" aria-label="Reference 5">[5]</a>. Moreover, conventional post-training such as RLVR/DPO typically optimizes for coherent, readable, and conventionally well-formed text, which suppresses dramatic dynamics in creative writing <a class="citation-link" href="https://arxiv.org/abs/2605.27878" target="_blank" rel="noopener" title="Narrative Flattening — Li et al. (2026)" aria-label="Reference 5">[5]</a>. These findings highlight a gap between generating logically consistent narrative text and reproducing the evolving reader experiences characteristic of compelling stories.</p>
+        <p>While there is no single ideal trajectory of reader responses, high-quality human-written narratives provide examples of how such responses unfold over time. This motivates learning readerly dynamics directly from these narratives and using them as guidance during generation.</p>
+      </section>
+
+      <section id="idea" class="prose">
+        <h2>Modeling reader responses to guide generation</h2>
+        <p>Our work unfolds as three steps: first, we extract readerly dynamics data from human-written stories, using off-the-shelf LLMs with calibrated system prompts as a proxy to human readers. Next, we use the extracted data to finetune a small LLM that predicts future reader responses from an unfinished story. Finally, we used the predicted responses as a steering signal to guide a frontier LLM, which has strong instruction following capabilities, to generate the story content for the next segment.</p>
+      </section>
+
+      <figure class="wide paper-figure" id="method">
+        <div class="method-tabs" role="tablist" aria-label="Training and inference">
+          <button type="button" id="tab-training" role="tab" aria-selected="true" aria-controls="panel-training">Training</button>
+          <button type="button" id="tab-inference" role="tab" aria-selected="false" aria-controls="panel-inference" tabindex="-1">Inference</button>
+        </div>
+        <div id="panel-training" role="tabpanel" aria-labelledby="tab-training" tabindex="0">
+          <a class="paper-image-link" href="assets/figures/training.svg" target="_blank" rel="noopener" aria-label="Open full-size training figure"><img src="assets/figures/training.svg" alt="Training: predicted next reader responses are supervised by responses measured from human-written story continuations." loading="lazy"></a>
+          <p class="method-caption"><strong>Training.</strong> Only the steering model is fine-tuned, using reader responses measured from human-written stories.</p>
+        </div>
+        <div id="panel-inference" role="tabpanel" aria-labelledby="tab-inference" tabindex="0" hidden>
+          <a class="paper-image-link" href="assets/figures/inference.svg" target="_blank" rel="noopener" aria-label="Open full-size inference figure"><img src="assets/figures/inference.svg" alt="Inference: the steering model predicts the next response, the writer generates a story segment, and the measure model updates the response trajectory." loading="lazy"></a>
+          <p class="method-caption"><strong>Inference.</strong> The steering model predicts the next reader response. Six writer candidates are scored, and the closest to the predicted response is selected.</p>
+        </div>
+        <figcaption><strong>Figure 1.</strong> The paper’s training and inference schemes.</figcaption>
+      </figure>
+
+      <section id="results" class="prose"><h2>Main results</h2><p>Methods relying on implicit learning of readerly dynamics show limited effectiveness. In-context learning (ICL) yields negligible fidelity improvements, while SFT sometimes achieves higher fidelity but substantially degrades coherence. In contrast, our framework explicitly targets reader-response trajectories, reducing dynamics error by 12%–35% while largely preserving coherence.</p></section>
+
+      <figure class="wide paper-figure tradeoff-figure">
+<div class="paper-plot-grid"><div><h4>Humor</h4><a class="paper-image-link " href="assets/figures/humor_quality_fidelity_tradeoff.svg" target="_blank" rel="noopener" aria-label="Open full-size figure: Humor dynamics error versus story coherence for all methods. Circles indicate Qwen3.5-27B and triangles GPT-5.5; the gray band marks the human-story coherence interval."><img src="assets/figures/humor_quality_fidelity_tradeoff.svg" alt="Humor dynamics error versus story coherence for all methods. Circles indicate Qwen3.5-27B and triangles GPT-5.5; the gray band marks the human-story coherence interval." loading="lazy"></a></div><div><h4>Suspense</h4><a class="paper-image-link " href="assets/figures/suspense_quality_fidelity_tradeoff.svg" target="_blank" rel="noopener" aria-label="Open full-size figure: Suspense dynamics error versus story coherence for all methods. SFT reduces error but loses coherence; the guided method offers a better balance, especially with GPT-5.5."><img src="assets/figures/suspense_quality_fidelity_tradeoff.svg" alt="Suspense dynamics error versus story coherence for all methods. SFT reduces error but loses coherence; the guided method offers a better balance, especially with GPT-5.5." loading="lazy"></a></div></div>
+
+<figcaption><strong>Figure 2.</strong> Readerly-dynamics fidelity versus Story coherence for different methods, using two base writer models in suspense and humor. Lower trajectory error (x axis) and higher coherence (y axis) are better. Gray bands are 95% bootstrap intervals for LLM judge's scores on human-authored stories.</figcaption></figure>
+
+
+      <section class="prose"><h2>A qualitative example of humor dynamics</h2><p>While the off-the-shelf LLM tends to introduce a punchline in nearly every segment, both human-written stand-up comedy and our generated stories exhibit a more natural alternation between setups and punchlines. By allowing moments of anticipation and relief rather than continuously delivering jokes, our method better captures the temporal structure of human readerly dynamics.</p></section>
+      <figure class="wide qualitative-paper" id="qualitative-example">
+<div class="qualitative-top"><a class="paper-image-link" href="assets/figures/fig3_humor_dynamics.svg" target="_blank" rel="noopener"><img src="assets/figures/fig3_humor_dynamics.svg" alt="LLM-measured humor across six story positions for Human GT, Off-the-shelf, and Ours, with a shared opening through position 3."></a><div class="shared-paper-opening"><div class="paper-beat"><div class="paper-beat-heading"><strong>Shared opening (Position 3 of 6)</strong><span class="paper-beat-label setup">setup</span></div><p>If you don't know common core math, it's just basically a long way to get to the same answer. It's like you. It's like how can we use the entire sheet of paper for this math problem?</p></div></div></div>
+<div class="qualitative-columns"><section class="qualitative-column"><h3>(a) Human (GT)</h3><div class="paper-beat"><div class="paper-beat-heading"><strong>Position 4</strong><span class="paper-beat-label setup">setup</span></div><p>And even when you break it down, you see old math sneak in there. I mean, you're you're like that was old math right there. Just do that at the beginning and we won't even have to be in this there's.</p></div><div class="paper-beat"><div class="paper-beat-heading"><strong>Position 5</strong><span class="paper-beat-label punchline">punchline</span></div><p>I told my wife it's a long way to get to the same thing. It would be if you came to my house and you knocked on the front door and you're like: can I come in? And I was like, could you walk around and come in through the back door?</p></div></section><section class="qualitative-column"><h3>(b) Off-the-shelf Qwen3.5-27B</h3><div class="paper-beat"><div class="paper-beat-heading"><strong>Position 4</strong><span class="paper-beat-label punchline">punchline</span></div><p>So you're just filling the whole page with circles and lines and arrows. You finally get the answer at the bottom, right? And the kid looks at you like, &quot;Did I do it right?&quot; And you're just sweating because you have no idea if that answer is right or if you accidentally drew a map to Mars.</p></div><div class="paper-beat"><div class="paper-beat-heading"><strong>Position 5</strong><span class="paper-beat-label punchline">punchline</span></div><p>So you just have to guess and hope for the best. You say, &quot;Yeah, great job, look at all those arrows!&quot; You are terrified they are going to ask for your work and you're just going to point at the doodles. It's not math anymore; it's abstract art.</p></div></section><section class="qualitative-column"><h3>(c) Ours (Qwen3.5-27B)</h3><div class="paper-beat"><div class="paper-beat-heading"><strong>Position 4</strong><span class="paper-beat-label setup">setup</span></div><p>It's just a massive puzzle where the answer is buried under forty steps of nonsense. You spend the whole time trying to figure out the method instead of actually solving the problem. You're just scribbling away, and by the time you get the answer, you've forgotten what question you were even asking in the first place.</p></div><div class="paper-beat"><div class="paper-beat-heading"><strong>Position 5</strong><span class="paper-beat-label punchline">punchline</span></div><p>So you finally get twenty-seven, but you have to circle it three times, draw a pyramid around it, and write a haiku explaining why it feels that way. The teacher grades the pyramid and the poem, not the math. You're not a mathematician anymore; you're an artist with a calculator, begging for validation on a drawing that says the answer is obvious.</p></div></section></div>
+<figcaption><strong>Figure 3.</strong> Qualitative example showing humor dynamics across methods. The shared opening is shown once at upper right. The LLM-measured level of humor for all story positions are shown at upper left. Green <span class="paper-beat-label setup">setup</span> and red <span class="paper-beat-label punchline">punchline</span> are editorial labels.</figcaption></figure>
+
+      <section id="validation" class="prose"><h2>User study</h2><p>Ideally, we would directly evaluate generated outputs through human preference studies across methods. However, substantial annotator disagreement would require a prohibitively large labeling budget to obtain reliable estimates. We therefore adopt an indirect evaluation strategy: first validating the LLM-based measure model against human judgments, then using the validated model as a proxy metric to compare generation methods.</p></section>
+      <figure class="wide paper-figure">
+<div class="paper-plot-grid validation-plots"><div><h4>Suspense</h4><a class="paper-image-link " href="assets/figures/llm_human_score_scatter_suspense.svg" target="_blank" rel="noopener" aria-label="Open full-size figure: Suspense: LLM measurement scores versus mean human scores at each story position, with Pearson and Spearman correlations."><img src="assets/figures/llm_human_score_scatter_suspense.svg" alt="Suspense: LLM measurement scores versus mean human scores at each story position, with Pearson and Spearman correlations." loading="lazy"></a><a class="paper-image-link " href="assets/figures/human_direction_probability_suspense.svg" target="_blank" rel="noopener" aria-label="Open full-size figure: Suspense: directional agreement between model and human judgments as a function of the LLM score gap, with bootstrap median and 95 percent confidence interval."><img src="assets/figures/human_direction_probability_suspense.svg" alt="Suspense: directional agreement between model and human judgments as a function of the LLM score gap, with bootstrap median and 95 percent confidence interval." loading="lazy"></a></div><div><h4>Humor</h4><a class="paper-image-link " href="assets/figures/llm_human_score_scatter_humor.svg" target="_blank" rel="noopener" aria-label="Open full-size figure: Humor: LLM measurement scores versus mean human scores at each story position, with Pearson and Spearman correlations."><img src="assets/figures/llm_human_score_scatter_humor.svg" alt="Humor: LLM measurement scores versus mean human scores at each story position, with Pearson and Spearman correlations." loading="lazy"></a><a class="paper-image-link " href="assets/figures/human_direction_probability_humor.svg" target="_blank" rel="noopener" aria-label="Open full-size figure: Humor: directional agreement between model and human judgments as a function of the LLM score gap, with bootstrap median and 95 percent confidence interval."><img src="assets/figures/human_direction_probability_humor.svg" alt="Humor: directional agreement between model and human judgments as a function of the LLM score gap, with bootstrap median and 95 percent confidence interval." loading="lazy"></a></div></div>
+<figcaption><strong>Figure 4.</strong> <strong>Top:</strong> LLM measurement scores versus human mean scores (rescaled from 1–9 to 0–100) at each story position. Each point represents a unique story prefix; <em>r</em> and <em>ρ</em> denote Pearson and Spearman correlations. <strong>Bottom:</strong> Probability that human and LLM scores agree on the direction of change between two story positions, given an absolute LLM score gap of <em>X</em>. Curves show bootstrap medians with 95% confidence intervals.</figcaption></figure>
+<div class="prose"><p>Although the measure model is less reliable at distinguishing subtle variations, it generally agrees with human judgments when differences in reader responses are pronounced. These results support using the measure model to provide an effective learning signal for the steering model.</p></div>
+
+      <section class="prose limitations"><h2>Conclusion</h2><p>We propose a framework that explicitly models readerly dynamics in story generation, using a learned steering model to predict future reader responses and guide an off-the-shelf LLM writer. Experiments on suspense and humor show improved fidelity to readerly dynamics measured from human-written stories while maintaining story coherence. Our findings highlight the potential for more adaptive and personalized storytelling, where future work should address error accumulation in long-form generation and improve measurement reliability through broader human validation.</p></section>
+      <section class="prose citation-section" id="citation"><div class="citation-heading"><h2>Cite this work</h2><button type="button" id="copy-citation">Copy BibTeX</button></div><pre id="bibtex">@misc{li2026steeringreaderlydynamics,
+      title={Steering Readerly Dynamics: Trajectory-Guided Story Generation with Large Language Models}, 
+      author={Danrui Li and Yiwei Zhao and Mubbasir Kapadia and Lingxiao Li},
+      year={2026},
+      eprint={2611.00469},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2611.00469}, 
+}</pre><p id="copy-status" class="small-label" role="status"></p></section>
+    </article>
+  </main>
+
+</body>
+</html>
+
