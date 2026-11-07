@@ -22,7 +22,9 @@ sup{font-size:10px}.authors sup,.affiliations sup{font-size:.65em}
 p{margin:0 0 22px}strong{font-weight:600}
 .tldr{padding:0;background:transparent;border:0;margin-bottom:36px}
 .tldr .eyebrow{font-size:15px;font-weight:600;display:block;margin-bottom:8px}.tldr p{margin:0}
+.tldr p + p{margin-top:0.6em}
 section.prose{margin-top:40px}
+section#motivation{margin-top:56px}
 h2{font-size:25px;font-weight:600;line-height:1.4;margin:0 0 20px;letter-spacing:-.3px}
 h3{font-size:18px;line-height:1.5;font-weight:600;margin:0 0 16px}
 h4{font-size:15px;font-weight:600;margin:0 0 12px}
@@ -45,9 +47,19 @@ figure{margin:28px auto 32px}
 .validation-plots{max-width:500px;margin:0 auto}
 figcaption{font-size:13px;line-height:1.6;color:#666;margin-top:14px}
 figcaption strong{color:#444}
-.method-tabs{display:flex;width:max-content;max-width:100%;gap:4px;padding:5px;margin:0 auto 28px;border:1px solid #e7e7e7;border-radius:999px;background:#f1f1f1;box-shadow:0 2px 6px #00000006}
-.method-tabs [role="tab"]{min-width:120px;padding:9px 23px;border:0;border-radius:999px;background:transparent;color:#707070;font-size:14px;font-weight:500;line-height:1.4;cursor:pointer}
-.method-tabs [role="tab"][aria-selected="true"]{color:#252525;background:#fff;box-shadow:0 1px 4px #0000001a,0 1px 2px #0000000a}
+.method-deck{margin:16px 12px 24px 0;isolation:isolate}
+.method-tabs{position:relative;display:flex;align-items:flex-end;gap:8px;padding-left:18px;margin-bottom:-1px}
+.method-tabs [role="tab"]{position:relative;z-index:1;padding:8px 18px 12px;border:1px solid #e7e7e7;border-bottom-color:#fff;border-radius:3px 3px 0 0;background:#fff;color:#252525;font-size:14px;font-weight:500;line-height:1.4;cursor:pointer}
+.method-tabs #tab-inference{left:12px;top:-8px;padding-bottom:4px}
+.method-tabs [role="tab"][aria-selected="true"]{z-index:3;color:#252525;background:#fff;border-bottom-color:#fff}
+.method-stack{display:grid}
+.method-stack [role="tabpanel"]{grid-area:1 / 1;min-width:0;padding:18px 20px 12px;background:#fff;border:1px solid #e7e7e7;box-shadow:0 2px 5px #0000000a}
+.method-stack #panel-inference{position:relative;left:12px;top:-8px}
+.method-stack [data-active="true"]{z-index:2}
+.method-stack [data-active="false"]{z-index:0;pointer-events:none}
+#method .paper-image-link{width:100%;margin:0}
+#method .method-caption{margin:12px 0 0}
+@media(max-width:600px){.method-deck{margin-right:8px}.method-stack [role="tabpanel"]{padding:12px}.method-stack #panel-inference,.method-tabs #tab-inference{left:8px;top:-6px}.method-tabs #tab-inference{padding-bottom:6px}}
 .method-caption{font-size:13px;line-height:1.65;color:#666;margin:18px 0 12px}
 [role="tabpanel"][hidden]{display:none}
 .qualitative-paper{max-width:960px;margin-top:28px}

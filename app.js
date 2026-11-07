@@ -11,7 +11,10 @@ function selectMethodTab(selected) {
     const active = tab === selected;
     tab.setAttribute('aria-selected', String(active));
     tab.tabIndex = active ? 0 : -1;
-    document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+    const panel = document.getElementById(tab.getAttribute('aria-controls'));
+    panel.dataset.active = String(active);
+    panel.setAttribute('aria-hidden', String(!active));
+    panel.inert = !active;
   });
 }
 methodTabs.forEach((tab, index) => {

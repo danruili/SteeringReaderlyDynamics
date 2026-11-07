@@ -32,7 +32,8 @@
 
       <div class="tldr">
         <!-- <span class="eyebrow">TL;DR</span> -->
-        <p>We train a small LLM on human-written stories to predict how readerly dynamics should change as a story unfolds, then use its predictions to guide a larger LLM’s next story segment.</p>
+        <p>How can we give LLM-written stories less of that "AI feel"? We focus on readerly dynamics: how reader response might evolve over story progression. </p>
+        <p>We train a small LLM on human-written stories to predict how readerly dynamics should change as a story unfolds, then use its predictions to guide a larger LLM to write next story segment.</p>
         <div class="paper-links"><a class="paper-button" href="https://arxiv.org/abs/2611.00469" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8Z"/><path d="M14 3v5h5M8 13h8M8 17h6"/></svg><span>Read the paper</span></a></div>
       </div>
       </div>
@@ -50,17 +51,21 @@
       </section>
 
       <figure class="wide paper-figure" id="method">
+        <div class="method-deck">
         <div class="method-tabs" role="tablist" aria-label="Training and inference">
           <button type="button" id="tab-training" role="tab" aria-selected="true" aria-controls="panel-training">Training</button>
           <button type="button" id="tab-inference" role="tab" aria-selected="false" aria-controls="panel-inference" tabindex="-1">Inference</button>
         </div>
-        <div id="panel-training" role="tabpanel" aria-labelledby="tab-training" tabindex="0">
+        <div class="method-stack">
+        <div id="panel-training" role="tabpanel" aria-labelledby="tab-training" tabindex="0" data-active="true">
           <a class="paper-image-link" href="assets/figures/training.svg" target="_blank" rel="noopener" aria-label="Open full-size training figure"><img src="assets/figures/training.svg" alt="Training: predicted next reader responses are supervised by responses measured from human-written story continuations." loading="lazy"></a>
           <p class="method-caption"><strong>Training.</strong> Only the steering model is fine-tuned, using reader responses measured from human-written stories.</p>
         </div>
-        <div id="panel-inference" role="tabpanel" aria-labelledby="tab-inference" tabindex="0" hidden>
+        <div id="panel-inference" role="tabpanel" aria-labelledby="tab-inference" tabindex="0" data-active="false" aria-hidden="true" inert>
           <a class="paper-image-link" href="assets/figures/inference.svg" target="_blank" rel="noopener" aria-label="Open full-size inference figure"><img src="assets/figures/inference.svg" alt="Inference: the steering model predicts the next response, the writer generates a story segment, and the measure model updates the response trajectory." loading="lazy"></a>
           <p class="method-caption"><strong>Inference.</strong> The steering model predicts the next reader response. Six writer candidates are scored, and the closest to the predicted response is selected.</p>
+        </div>
+        </div>
         </div>
         <figcaption><strong>Figure 1.</strong> The paper’s training and inference schemes.</figcaption>
       </figure>
@@ -85,7 +90,13 @@
 <figcaption><strong>Figure 4.</strong> <strong>Top:</strong> LLM measurement scores versus human mean scores (rescaled from 1–9 to 0–100) at each story position. Each point represents a unique story prefix; <em>r</em> and <em>ρ</em> denote Pearson and Spearman correlations. <strong>Bottom:</strong> Probability that human and LLM scores agree on the direction of change between two story positions, given an absolute LLM score gap of <em>X</em>. Curves show bootstrap medians with 95% confidence intervals.</figcaption></figure>
 <div class="prose"><p>Although the measure model is less reliable at distinguishing subtle variations, it generally agrees with human judgments when differences in reader responses are pronounced. These results support using the measure model to provide an effective learning signal for the steering model.</p></div>
 
-      <section class="prose limitations"><h2>Conclusion</h2><p>We propose a framework that explicitly models readerly dynamics in story generation, using a learned steering model to predict future reader responses and guide an off-the-shelf LLM writer. Experiments on suspense and humor show improved fidelity to readerly dynamics measured from human-written stories while maintaining story coherence. Our findings highlight the potential for more adaptive and personalized storytelling, where future work should address error accumulation in long-form generation and improve measurement reliability through broader human validation.</p></section>
+      <section class="prose applications">
+        <h2>Applications</h2>
+        <p><b>Diverse Reader Response</b> Resting on generalizable LLM post-training, our work can extend beyond numerical affective responses (suspense and humor) to textual representations of cognitive responses.</p>
+        <p><b>Topic Transfer</b> Our explicit modeling of readerly dynamics separates the dynamics from other properties of the training material. It enables learning dynamics from one topic and applying it to another topic, without leaking the unexpected information such as lexical choices and narrative themes. </p>
+        <p><b>Easy Integration</b> Our modular approach separates readerly dynamics learning from story generation, enabling plug-and-play integration with future frontier writer LLMs or any other story writing agentic systems.</p>
+        <p><b>Human-AI collaboration</b> Our work can be applied to interactive content-generation systems. For example, in a human-AI co-writing setting, a writer can provide an unfinished story, and the system can generate multiple continuations designed to elicit distinct readerly dynamics. This allows writers to explore how different continuations may shape readers' responses.</p>
+      </section>
       <section class="prose citation-section" id="citation"><div class="citation-heading"><h2>Cite this work</h2><button type="button" id="copy-citation">Copy BibTeX</button></div><pre id="bibtex">@misc{li2026steeringreaderlydynamics,
       title={Steering Readerly Dynamics: Trajectory-Guided Story Generation with Large Language Models}, 
       author={Danrui Li and Yiwei Zhao and Mubbasir Kapadia and Lingxiao Li},
